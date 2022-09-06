@@ -1,0 +1,52 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "linux-base",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "installDir": "${sourceDir}/out/install/${presetName}",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "name": "vcpkg-base",
+            "hidden": true,
+            "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        },
+        {
+            "name": "dev",
+            "displayName": "x64 Debug",
+            "inherits": ["linux-base", "vcpkg-base"],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_C_FLAGS": "-Wall -Wextra -Wpedantic -Wmissing-prototypes -Wno-unused-function"
+            }
+        },
+        {
+            "name": "dev-san",
+            "displayName": "x64 Debug (Sanitizers)",
+            "inherits": ["dev"],
+            "cacheVariables": {
+                "CMAKE_C_FLAGS": "-fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer",
+                "CMAKE_CXX_FLAGS": "-fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer",
+                "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address -fsanitize=undefined"
+            }
+        },
+        {
+            "name": "dist",
+            "displayName": "x64 Release",
+            "inherits": "dev",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        }
+    ]
+}
