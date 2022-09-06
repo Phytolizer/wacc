@@ -39,7 +39,6 @@ int wacc_scan(d_loc_t* loc, unsigned short* symbol, int* term_priority, unsigned
     char* beg = loc->s;
     if (char_is_letter(*loc->s))
     {
-        *symbol = TT_IDENT;
         while (char_is_letter_or_digit(*loc->s))
         {
             loc->s += 1;
@@ -52,6 +51,10 @@ int wacc_scan(d_loc_t* loc, unsigned short* symbol, int* term_priority, unsigned
         else if (IS_KW(beg, len, "int"))
         {
             *symbol = KW_INT;
+        }
+        else
+        {
+            *symbol = TT_IDENT;
         }
         return 1;
     }
