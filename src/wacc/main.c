@@ -19,6 +19,8 @@ int main(int argc, char** argv)
     if (arg_parse_err.present)
     {
         arg_parser_show_help(&parser, stderr);
+        (void)fprintf(stderr, "ERROR: " ARG_STR_FMT "\n", ARG_STR_ARG(arg_parse_err.value));
+        arg_str_free(arg_parse_err.value);
         return 1;
     }
     if (help_arg.flagValue)
