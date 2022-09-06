@@ -170,11 +170,7 @@ int str_cat_range(str* dest, const str* src, size_t count);
 int str_join_range(str* dest, str sep, const str* src, size_t count);
 
 // join string arguments around the separator
-#define str_join(dest, sep, ...) \
-    ({ \
-        const str args[] = {__VA_ARGS__}; \
-        str_join_range((dest), (sep), args, sizeof(args) / sizeof(args[0])); \
-    })
+#define str_join(dest, sep, ...) str_join_range((dest), (sep), ARRAYOF_(__VA_ARGS__))
 
 // constructors ----------------------------------------------------------------------------
 // string reference from a string literal

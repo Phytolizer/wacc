@@ -17,7 +17,10 @@ prepend_path(STR_SRC src/str STR_SRC_REL)
 add_library(str ${STR_SRC_REL})
 target_include_directories(str PUBLIC include)
 
-set(WACC_SRC main.c ast.c codegen.c)
+add_library(process src/process/process.c)
+target_include_directories(process PUBLIC include)
+
+set(WACC_SRC main.c ast.c codegen.c mkexe.c)
 prepend_path(WACC_SRC src/wacc WACC_SRC_REL)
 add_executable(wacc ${WACC_SRC_REL})
 
@@ -39,5 +42,6 @@ target_include_directories(
           ${CMAKE_CURRENT_SOURCE_DIR}/deps/dparser
 )
 target_link_libraries(
-  wacc PRIVATE str dparser::dparse hedley::hedley c-argparser::c-argparser
+  wacc PRIVATE str process dparser::dparse hedley::hedley
+               c-argparser::c-argparser
 )

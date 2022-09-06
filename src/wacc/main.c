@@ -1,5 +1,5 @@
 #include "wacc/ast.h"
-#include "wacc/codegen.h"
+#include "wacc/mkexe.h"
 
 #include <arg/arg.h>
 #include <dparse.h>
@@ -36,7 +36,7 @@ int main(int argc, char** argv)
     {
         printf("Parsed successfully\n");
         ast_show(pn->user);
-        codegen_program(pn->user.as.program, stdout);
+        mkexe(pn->user.as.program, str_lit("test"));
         ast_free(pn->user);
         free_D_ParseNode(p, pn);
     }

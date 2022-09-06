@@ -60,8 +60,8 @@ void codegen_program(WaccProgram program, FILE* fp)
     emit(&gen, fp, "global _start");
     emit_label(fp, "_start");
     emit(&gen, fp, "call main");
+    emit(&gen, fp, "mov rdi, rax");
     emit(&gen, fp, "mov rax, 60");
-    emit(&gen, fp, "mov rdi, 0");
     emit(&gen, fp, "syscall");
     codegen_function(&gen, fp, program.function);
 }
