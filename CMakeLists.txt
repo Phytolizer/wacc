@@ -18,11 +18,11 @@ target_include_directories(str PUBLIC include)
 
 add_executable(wacc src/wacc/main.c)
 
-embed_file(resources/grammar.yaep GRAMMAR_YAEP wacc)
+embed_file(resources/grammar.g GRAMMAR_G wacc)
 
 target_include_directories(
   wacc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/include
                ${CMAKE_CURRENT_BINARY_DIR}/embedded/include
 )
-target_link_libraries(wacc PRIVATE str yaep_static)
+target_link_libraries(wacc PRIVATE str)
 add_dependencies(wacc generated_dir)
