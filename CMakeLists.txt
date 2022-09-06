@@ -9,10 +9,20 @@ add_custom_target(
 
 add_subdirectory(deps/yaep)
 
+add_executable(embed src/embed/embed.c)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+include(EmbedFile)
+
 add_library(str src/str/str.c)
 target_include_directories(str PUBLIC include)
 
 add_executable(wacc src/wacc/main.c)
-target_include_directories(wacc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/include)
-target_link_libraries(wacc PRIVATE str)
+
+embed_file(resources/grammar.yaep GRAMMAR_YAEP wacc)
+
+target_include_directories(
+  wacc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/include
+               ${CMAKE_CURRENT_BINARY_DIR}/embedded/include
+)
+target_link_libraries(wacc PRIVATE str yaep_static)
 add_dependencies(wacc generated_dir)
