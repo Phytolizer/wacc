@@ -217,7 +217,9 @@ static SUITE_FUNC(state, compare_with_gcc)
     {
         TestCase test = cases.ptr[i];
         RUN_TEST(state, execute, str_printf("test case " str_fmt, str_arg(test.path)), test);
+        str_free(test.path);
     }
+    BUF_FREE(cases);
 }
 
 static void run_all(TestState* state)

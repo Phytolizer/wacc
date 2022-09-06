@@ -70,14 +70,15 @@ typedef struct
 #define RUN_TEST(state, name, displayname, ...) \
     do \
     { \
-        (void)fprintf(stderr, "TEST  " str_fmt "\n", str_arg(displayname)); \
+        str disp = displayname; \
+        (void)fprintf(stderr, "TEST  " str_fmt "\n", str_arg(disp)); \
         TestResult result = name##_test(state, __VA_ARGS__); \
         switch (result.type) \
         { \
             case TEST_RESULT_FAIL: \
                 ++(state)->failed; \
                 (void)fprintf( \
-                    stderr, "FAIL  " str_fmt ": " str_fmt "\n", str_arg(displayname), str_arg(result.errorMessage)); \
+                    stderr, "FAIL  " str_fmt ": " str_fmt "\n", str_arg(disp), str_arg(result.errorMessage)); \
                 str_free(result.errorMessage); \
                 break; \
             case TEST_RESULT_PASS: \
@@ -85,10 +86,10 @@ typedef struct
                 break; \
             case TEST_RESULT_SKIP: \
                 ++(state)->skipped; \
-                (void)fprintf(stderr, "SKIP  " str_fmt "\n", str_arg(displayname)); \
+                (void)fprintf(stderr, "SKIP  " str_fmt "\n", str_arg(disp)); \
                 break; \
         } \
-        str_free(displayname); \
+        str_free(disp); \
     } while (false)
 
 #define RUN_SUBTEST(state, name, cleanup, ...) \

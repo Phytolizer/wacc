@@ -226,7 +226,7 @@ static str str_vprintf(const char* const fmt, va_list ap)
 
     (void)vsnprintf(s, (size_t)n + 1, fmt, ap);
 
-    return (str){s, n, true};
+    return str_acquire_chars(s, n);
 }
 
 str str_printf(const char* fmt, ...)

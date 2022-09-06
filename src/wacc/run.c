@@ -53,5 +53,6 @@ int run(Argv argv, FILE* out, FILE* err)
         (void)fprintf(out, "Parse failed\n");
     }
     free_D_Parser(p);
+    ARG_BUF_FREE(parser.extra);
     return 0;
 }
