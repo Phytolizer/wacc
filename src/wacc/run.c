@@ -1,3 +1,5 @@
+#include "wacc/run.h"
+
 #include "wacc/ast.h"
 #include "wacc/mkexe.h"
 
@@ -8,7 +10,7 @@
 
 extern D_ParserTables parser_tables_wacc;
 
-int main(int argc, char** argv)
+int run(int argc, char** argv)
 {
     Arg help_arg =
         ARG_FLAG(.shortname = 'h', .longname = arg_str_lit("help"), .help = arg_str_lit("Show this help message"));
@@ -44,6 +46,6 @@ int main(int argc, char** argv)
     {
         printf("Parse failed\n");
     }
-    printf("Hello, World!\n");
     free_D_Parser(p);
+    return 0;
 }

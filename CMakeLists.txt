@@ -20,9 +20,9 @@ target_include_directories(str PUBLIC include)
 add_library(process src/process/process.c)
 target_include_directories(process PUBLIC include)
 
-set(WACC_SRC main.c ast.c codegen.c mkexe.c)
+set(WACC_SRC run.c ast.c codegen.c mkexe.c)
 prepend_path(WACC_SRC src/wacc WACC_SRC_REL)
-add_executable(wacc ${WACC_SRC_REL})
+add_library(wacc ${WACC_SRC_REL})
 
 set(GRAMMAR_G_FILE ${CMAKE_CURRENT_SOURCE_DIR}/resources/grammar.g)
 set(GRAMMAR_C_FILE ${CMAKE_CURRENT_BINARY_DIR}/grammar.g.c)
@@ -37,11 +37,19 @@ target_sources(wacc PRIVATE ${GRAMMAR_C_FILE})
 
 target_include_directories(
   wacc
-  PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/include
-          ${CMAKE_CURRENT_BINARY_DIR}/embedded/include
-          ${CMAKE_CURRENT_SOURCE_DIR}/deps/dparser
+  PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/include
+         ${CMAKE_CURRENT_BINARY_DIR}/embedded/include
+         ${CMAKE_CURRENT_SOURCE_DIR}/deps/dparser
 )
 target_link_libraries(
-  wacc PRIVATE str process dparser::dparse hedley::hedley
-               c-argparser::c-argparser
+  wacc PUBLIC str process dparser::dparse hedley::hedley
+              c-argparser::c-argparser
 )
+
+add_executable(wacc_driver src/wacc_driver/main.c)
+set_target_properties(wacc_driver PROPERTIES OUTPUT_NAME wacc)
+target_link_libraries(wacc_driver PRIVATE wacc)
+
+enable_testing()
+add_executable(test_wacc tests/test.c)
+target_link_libraries(test_wacc PRIVATE wacc)
