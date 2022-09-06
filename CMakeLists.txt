@@ -2,28 +2,30 @@ cmake_minimum_required(VERSION 3.23)
 
 project(wacc LANGUAGES C)
 
-set(GENERATED_DIR ${CMAKE_CURRENT_BINARY_DIR}/include/wacc/generated)
-add_custom_target(
-  generated_dir COMMAND ${CMAKE_COMMAND} -E make_directory ${GENERATED_DIR}
-)
-
 add_subdirectory(deps/dparser)
 
 add_executable(embed src/embed/embed.c)
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_BINARY_DIR}/deps/dparser)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake
+     ${CMAKE_CURRENT_BINARY_DIR}/deps/dparser
+)
 include(dparser-generate)
 include(DParseTargets)
+include(PrependPath)
 
-add_library(str src/str/str.c)
+set(STR_SRC str.c strtox.c)
+prepend_path(STR_SRC src/str STR_SRC_REL)
+add_library(str ${STR_SRC_REL})
 target_include_directories(str PUBLIC include)
 
-add_executable(wacc src/wacc/main.c)
+set(WACC_SRC main.c ast.c)
+prepend_path(WACC_SRC src/wacc WACC_SRC_REL)
+add_executable(wacc ${WACC_SRC_REL})
 
 set(GRAMMAR_G_FILE ${CMAKE_CURRENT_SOURCE_DIR}/resources/grammar.g)
 set(GRAMMAR_C_FILE ${CMAKE_CURRENT_BINARY_DIR}/grammar.g.c)
 add_custom_command(
   OUTPUT ${GRAMMAR_C_FILE}
-  DEPENDS ${GRAMMAR_G_FILE}
+  DEPENDS ${GRAMMAR_G_FILE} dparser::make_dparser
   VERBATIM
   COMMAND dparser::make_dparser ${GRAMMAR_G_FILE} -o ${GRAMMAR_C_FILE} -i wacc
 )
@@ -37,4 +39,3 @@ target_include_directories(
           ${CMAKE_CURRENT_SOURCE_DIR}/deps/dparser
 )
 target_link_libraries(wacc PRIVATE str dparser::dparse)
-add_dependencies(wacc generated_dir)

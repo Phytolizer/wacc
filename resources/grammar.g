@@ -1,7 +1,12 @@
 {
 #include "str/str.h"
+#include "str/strtox.h"
 #include "wacc/ast.h"
-#define D_ParseNode_User WaccNode
+
+#include <stdlib.h>
+#include <string.h>
+
+#define str_ref_node(node) str_ref_chars((node).start_loc.s, (node).end - (node).start_loc.s)
 }
 
 program: function
@@ -14,7 +19,7 @@ function: 'int' IDENT '(' ')' '{' statement '}'
 {
   $$.kind = WACC_NODE_FUNCTION;
   $$.as.function.name = str_null;
-  str_cpy(&($$.as.function.name), str_ref($n1.start_loc.s));
+  str_cpy(&($$.as.function.name), str_ref_node($n1));
   $$.as.function.statement = $5.as.statement;
 };
 
@@ -27,8 +32,14 @@ statement: 'return' expression ';'
 expression: NUMBER
 {
   $$.kind = WACC_NODE_EXPRESSION;
-  str num_str = str_ref($n0.start_loc.s);
-  $$.as.expression.value = strtol(num_str.ptr, NULL, 10);
+  str num_str = str_ref_node($n0);
+  Str2U64Result result = str2u64(num_str, 10);
+  if (result.err)
+  {
+    fprintf(stderr, "Error: %s\n", strerror(result.err));
+    exit(1);
+  }
+  $$.as.expression.value = result.value;
 };
 
 IDENT: "[a-zA-Z_][a-zA-Z0-9_]*";

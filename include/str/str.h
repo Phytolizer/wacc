@@ -234,6 +234,9 @@ void str_tok_init(str_tok_state* state, str src, str delim_set);
 bool str_tok(str* dest, str_tok_state* state);
 void str_tok_delim(str_tok_state* state, str delim_set);
 
+#define str_fmt "%.*s"
+#define str_arg(s) (int)(s).len, str_ptr(s)
+
 #ifdef __cplusplus
 }
 #endif

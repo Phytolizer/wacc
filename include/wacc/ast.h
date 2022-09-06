@@ -43,3 +43,7 @@ typedef struct
         WaccExpression expression;
     } as;
 } WaccNode;
+#define D_ParseNode_User WaccNode
+
+void ast_show(WaccNode root);
+void ast_free(WaccNode root);
