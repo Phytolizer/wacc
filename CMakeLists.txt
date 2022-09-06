@@ -7,22 +7,34 @@ add_custom_target(
   generated_dir COMMAND ${CMAKE_COMMAND} -E make_directory ${GENERATED_DIR}
 )
 
-add_subdirectory(deps/yaep)
+add_subdirectory(deps/dparser)
 
 add_executable(embed src/embed/embed.c)
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-include(EmbedFile)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_BINARY_DIR}/deps/dparser)
+include(dparser-generate)
+include(DParseTargets)
 
 add_library(str src/str/str.c)
 target_include_directories(str PUBLIC include)
 
 add_executable(wacc src/wacc/main.c)
 
-embed_file(resources/grammar.g GRAMMAR_G wacc)
+set(GRAMMAR_G_FILE ${CMAKE_CURRENT_SOURCE_DIR}/resources/grammar.g)
+set(GRAMMAR_C_FILE ${CMAKE_CURRENT_BINARY_DIR}/grammar.g.c)
+add_custom_command(
+  OUTPUT ${GRAMMAR_C_FILE}
+  DEPENDS ${GRAMMAR_G_FILE}
+  VERBATIM
+  COMMAND dparser::make_dparser ${GRAMMAR_G_FILE} -o ${GRAMMAR_C_FILE} -i wacc
+)
+set_source_files_properties(${GRAMMAR_C_FILE} PROPERTIES GENERATED 1)
+target_sources(wacc PRIVATE ${GRAMMAR_C_FILE})
 
 target_include_directories(
-  wacc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/include
-               ${CMAKE_CURRENT_BINARY_DIR}/embedded/include
+  wacc
+  PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/include
+          ${CMAKE_CURRENT_BINARY_DIR}/embedded/include
+          ${CMAKE_CURRENT_SOURCE_DIR}/deps/dparser
 )
-target_link_libraries(wacc PRIVATE str)
+target_link_libraries(wacc PRIVATE str dparser::dparse)
 add_dependencies(wacc generated_dir)

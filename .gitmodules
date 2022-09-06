@@ -1,0 +1,4 @@
+[submodule "deps/dparser"]
+	path = deps/dparser
+	url = https://github.com/Phytolizer/dparser
+	branch = c-update
