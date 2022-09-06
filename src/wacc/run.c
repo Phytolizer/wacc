@@ -59,6 +59,11 @@ int run(Argv argv, FILE* out, FILE* err)
     }
     else
     {
+        if (pn != NULL)
+        {
+            ast_free(pn->user);
+            free_D_ParseNode(p, pn);
+        }
         (void)fprintf(out, "Parse failed\n");
         ret = 1;
     }
