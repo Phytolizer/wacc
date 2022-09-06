@@ -13,7 +13,7 @@ static void show_indent(CodeGenerator* gen, FILE* fp)
 {
     for (uint64_t i = 0; i < gen->depth; i++)
     {
-        (void)fprintf(fp, "  ");
+        (void)fprintf(fp, "    ");
     }
 }
 
