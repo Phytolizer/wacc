@@ -27,17 +27,19 @@ add_library(file src/file/file.c)
 target_include_directories(file PUBLIC include)
 target_link_libraries(file PUBLIC str sum)
 
-set(WACC_SRC run.c ast.c codegen.c mkexe.c)
+set(WACC_SRC run.c ast.c codegen.c mkexe.c scan.c)
 prepend_path(WACC_SRC src/wacc WACC_SRC_REL)
 add_library(wacc ${WACC_SRC_REL})
 
-set(GRAMMAR_G_FILE ${CMAKE_CURRENT_SOURCE_DIR}/resources/grammar.g)
+configure_file(resources/grammar.g include/grammar.g COPYONLY)
+set(GRAMMAR_G_FILE ${CMAKE_CURRENT_BINARY_DIR}/include/grammar.g)
 set(GRAMMAR_C_FILE ${CMAKE_CURRENT_BINARY_DIR}/grammar.g.c)
 add_custom_command(
   OUTPUT ${GRAMMAR_C_FILE}
   DEPENDS ${GRAMMAR_G_FILE} dparser::make_dparser
   VERBATIM
   COMMAND dparser::make_dparser ${GRAMMAR_G_FILE} -o ${GRAMMAR_C_FILE} -i wacc
+          -t 1
 )
 set_source_files_properties(${GRAMMAR_C_FILE} PROPERTIES GENERATED 1)
 target_sources(wacc PRIVATE ${GRAMMAR_C_FILE})
