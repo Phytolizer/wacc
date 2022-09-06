@@ -1,0 +1,3 @@
+[submodule "deps/yaep"]
+	path = deps/yaep
+	url = https://github.com/Phytolizer/yaep.git
