@@ -29,6 +29,8 @@ static bool strlen_ge(const char* s, size_t n)
     return i == n;
 }
 
+#define IS_KW(s1, n, lit) (n == sizeof(lit) - 1 && memcmp(s1, lit, n) == 0)
+
 int wacc_scan(d_loc_t* loc, unsigned short* symbol, int* term_priority, unsigned char* op_assoc, int* op_priority)
 {
     (void)term_priority;
@@ -42,11 +44,12 @@ int wacc_scan(d_loc_t* loc, unsigned short* symbol, int* term_priority, unsigned
         {
             loc->s += 1;
         }
-        if (loc->s - beg == 6 && strncmp(beg, "return", 6) == 0)
+        size_t len = loc->s - beg;
+        if (IS_KW(beg, len, "return"))
         {
             *symbol = KW_RETURN;
         }
-        else if (loc->s - beg == 3 && strncmp(beg, "int", 3) == 0)
+        else if (IS_KW(beg, len, "int"))
         {
             *symbol = KW_INT;
         }
