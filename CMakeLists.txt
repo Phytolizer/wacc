@@ -9,7 +9,6 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake
      ${CMAKE_CURRENT_BINARY_DIR}/deps/dparser
 )
 include(dparser-generate)
-include(DParseTargets)
 include(PrependPath)
 
 set(STR_SRC str.c strtox.c)
