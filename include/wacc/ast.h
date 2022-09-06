@@ -45,5 +45,5 @@ typedef struct
 } WaccNode;
 #define D_ParseNode_User WaccNode
 
-void ast_show(WaccNode root);
+void ast_show(WaccNode root, FILE* out, FILE* err);
 void ast_free(WaccNode root);

@@ -148,7 +148,7 @@ static TEST_FUNC(state, execute, TestCase info)
         {
             if (info.skip_on_failure)
             {
-                (void)remove("dragon.out");
+                (void)remove("wacc.out");
                 SKIP();
             }
             FILE* err_in = fdopen(errpipe[0], "r");
@@ -159,35 +159,33 @@ static TEST_FUNC(state, execute, TestCase info)
             {
                 (void)fprintf(stderr, "%s", line);
             }
-            FAIL(state, CLEANUP((void)remove("dragon.out")), "dragon failed to compile");
+            FAIL(state, CLEANUP((void)remove("wacc.out")), "wacc failed to compile");
         }
     }
     else
     {
         TEST_ASSERT(state,
             res != 0,
-            CLEANUP((void)remove("dragon.out")),
-            "dragon compiled invalid test " str_fmt,
+            CLEANUP((void)remove("wacc.out")),
+            "wacc compiled invalid test " str_fmt,
             str_arg(info.path));
         PASS();
     }
 
-    const char* run_args[] = {"./dragon.out"};
-    ProcessCreateResult dragon_result =
+    const char* run_args[] = {"./wacc.out"};
+    ProcessCreateResult wacc_result =
         process_run((ProcessCStrBuf)BUF_ARRAY(run_args), PROCESS_OPTION_COMBINED_STDOUT_STDERR);
-    TEST_ASSERT(state, dragon_result.present, CLEANUP((void)remove("dragon.out")), "dragon program failed to spawn");
+    TEST_ASSERT(state, wacc_result.present, CLEANUP((void)remove("wacc.out")), "wacc program failed to spawn");
 
-    int dragon_code = dragon_result.value.returnCode;
-    process_destroy(&dragon_result.value);
-    (void)remove("dragon.out");
+    int wacc_code = wacc_result.value.returnCode;
+    process_destroy(&wacc_result.value);
+    (void)remove("wacc.out");
 
     const char* gcc_args[] = {"gcc", info.path.ptr, "-o", "gcc.out"};
     ProcessCreateResult gcc_result = process_run(
         (ProcessCStrBuf)BUF_ARRAY(gcc_args), PROCESS_OPTION_COMBINED_STDOUT_STDERR | PROCESS_OPTION_SEARCH_USER_PATH);
-    TEST_ASSERT(state,
-        gcc_result.present,
-        CLEANUP((void)remove("dragon.out"); (void)remove("gcc.out")),
-        "gcc failed to compile");
+    TEST_ASSERT(
+        state, gcc_result.present, CLEANUP((void)remove("wacc.out"); (void)remove("gcc.out")), "gcc failed to compile");
     process_destroy(&gcc_result.value);
 
     const char* gcc_run_args[] = {"./gcc.out"};
@@ -201,10 +199,10 @@ static TEST_FUNC(state, execute, TestCase info)
     (void)remove("gcc.out");
 
     TEST_ASSERT(state,
-        dragon_code == gcc_code,
+        wacc_code == gcc_code,
         NO_CLEANUP,
-        "dragon and gcc produced different exit codes: %d vs %d",
-        dragon_code,
+        "wacc and gcc produced different exit codes: %d vs %d",
+        wacc_code,
         gcc_code);
 
     PASS();

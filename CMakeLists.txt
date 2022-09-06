@@ -12,6 +12,9 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake
 include(dparser-generate)
 include(PrependPath)
 
+add_library(sum INTERFACE)
+target_include_directories(sum INTERFACE include)
+
 set(STR_SRC str.c strtox.c)
 prepend_path(STR_SRC src/str STR_SRC_REL)
 add_library(str ${STR_SRC_REL})
@@ -19,6 +22,10 @@ target_include_directories(str PUBLIC include)
 
 add_library(process src/process/process.c)
 target_include_directories(process PUBLIC include)
+
+add_library(file src/file/file.c)
+target_include_directories(file PUBLIC include)
+target_link_libraries(file PUBLIC str sum)
 
 set(WACC_SRC run.c ast.c codegen.c mkexe.c)
 prepend_path(WACC_SRC src/wacc WACC_SRC_REL)
@@ -50,7 +57,7 @@ target_include_directories(
          ${CMAKE_CURRENT_SOURCE_DIR}/deps/dparser
 )
 target_link_libraries(
-  wacc PUBLIC str process dparser::dparse hedley::hedley
+  wacc PUBLIC str file process dparser::dparse hedley::hedley
               c-argparser::c-argparser
 )
 

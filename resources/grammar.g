@@ -15,7 +15,7 @@ program: function
   $$.as.program.function = $0.as.function;
 };
 
-function: 'int' IDENT '(' ')' '{' statement '}'
+function: "int[ \t\r\n]" IDENT '(' ')' '{' statement '}'
 {
   $$.kind = WACC_NODE_FUNCTION;
   $$.as.function.name = str_null;
@@ -23,7 +23,7 @@ function: 'int' IDENT '(' ')' '{' statement '}'
   $$.as.function.statement = $5.as.statement;
 };
 
-statement: 'return' expression ';'
+statement: "return[ \t\r\n]" expression ';'
 {
   $$.kind = WACC_NODE_STATEMENT;
   $$.as.statement.expression = $1.as.expression;
@@ -46,4 +46,4 @@ IDENT: "[a-zA-Z_][a-zA-Z0-9_]*";
 
 NUMBER: "[0-9]+";
 
-whitespace: "([ \t\n\r]|(%[^\n\r]*))*";
+whitespace: "([ \t\n\r]|(%[^\n\r]*))+";
