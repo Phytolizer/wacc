@@ -10,18 +10,19 @@
 
 extern D_ParserTables parser_tables_wacc;
 
-int run(int argc, char** argv)
+int run(Argv argv, FILE* out, FILE* err)
 {
     Arg help_arg =
         ARG_FLAG(.shortname = 'h', .longname = arg_str_lit("help"), .help = arg_str_lit("Show this help message"));
-    Arg* args[] = {&help_arg};
+    Arg output_arg = ARG_OPT(.shortname = 'o', .longname = arg_str_lit("output"), .help = arg_str_lit("Output file"));
+    Arg* args[] = {&help_arg, &output_arg};
     ArgParser parser =
         arg_parser_new(arg_str_lit("wacc"), arg_str_lit("What A C Compiler!"), (ArgBuf)ARG_BUF_ARRAY(args));
-    ArgParseErr arg_parse_err = arg_parser_parse(&parser, argc, argv);
+    ArgParseErr arg_parse_err = arg_parser_parse(&parser, (int)argv.len, argv.ptr);
     if (arg_parse_err.present)
     {
         arg_parser_show_help(&parser, stderr);
-        (void)fprintf(stderr, "ERROR: " ARG_STR_FMT "\n", ARG_STR_ARG(arg_parse_err.value));
+        (void)fprintf(err, "ERROR: " ARG_STR_FMT "\n", ARG_STR_ARG(arg_parse_err.value));
         arg_str_free(arg_parse_err.value);
         return 1;
     }
@@ -36,15 +37,20 @@ int run(int argc, char** argv)
     D_ParseNode* pn = dparse(p, (char*)test_input.ptr, (int)test_input.len);
     if (pn != NULL)
     {
-        printf("Parsed successfully\n");
+        (void)fprintf(out, "Parsed successfully\n");
         ast_show(pn->user);
-        mkexe(pn->user.as.program, str_lit("test"));
+        str output = str_lit("a.out");
+        if (arg_str_len(output_arg.value) > 0)
+        {
+            output = str_ref_chars(output_arg.value.ptr, arg_str_len(output_arg.value));
+        }
+        mkexe(pn->user.as.program, output, err);
         ast_free(pn->user);
         free_D_ParseNode(p, pn);
     }
     else
     {
-        printf("Parse failed\n");
+        (void)fprintf(out, "Parse failed\n");
     }
     free_D_Parser(p);
     return 0;

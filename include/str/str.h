@@ -172,6 +172,8 @@ int str_join_range(str* dest, str sep, const str* src, size_t count);
 // join string arguments around the separator
 #define str_join(dest, sep, ...) str_join_range((dest), (sep), ARRAYOF_(__VA_ARGS__))
 
+#define path_join(dest, ...) str_join((dest), str_lit("/"), __VA_ARGS__)
+
 // constructors ----------------------------------------------------------------------------
 // string reference from a string literal
 #define str_lit(s) ((str){"" s, sizeof(s) - 1, false})
@@ -194,6 +196,8 @@ str str_acquire_chars(const char* s, size_t n);
 
 // take ownership of the given string
 str str_acquire(const char* s);
+
+str str_printf(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
 
 // searching and sorting --------------------------------------------------------------------
 // string partitioning (substring search)

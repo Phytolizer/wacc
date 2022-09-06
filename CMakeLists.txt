@@ -35,6 +35,14 @@ add_custom_command(
 set_source_files_properties(${GRAMMAR_C_FILE} PROPERTIES GENERATED 1)
 target_sources(wacc PRIVATE ${GRAMMAR_C_FILE})
 
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/include
+  COMMAND ${CMAKE_COMMAND} -E make_directory
+          ${CMAKE_CURRENT_BINARY_DIR}/include
+)
+
+configure_file(cmake/config.h.cmake-in include/wacc-config.h)
+
 target_include_directories(
   wacc
   PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/include

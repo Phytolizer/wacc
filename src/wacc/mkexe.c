@@ -10,8 +10,6 @@
 
 #define PROCESS_ARGS(...) (ProcessCStrBuf) BUF_ARRAY(((const char*[]){__VA_ARGS__}))
 
-#define path_join(dest, ...) str_join((dest), str_lit("/"), __VA_ARGS__)
-
 static void del_dir(str path)
 {
     DIR* dir = opendir(path.ptr);
@@ -48,7 +46,7 @@ static void del_dir(str path)
     str_free(path);
 }
 
-void mkexe(WaccProgram program, str exe_output)
+void mkexe(WaccProgram program, str exe_output, FILE* err)
 {
     char temp_template[] = "wacc-XXXXXX";
     char* temp_dir = mkdtemp(temp_template);
@@ -65,7 +63,7 @@ void mkexe(WaccProgram program, str exe_output)
             PROCESS_OPTION_COMBINED_STDOUT_STDERR | PROCESS_OPTION_SEARCH_USER_PATH);
     if (!nasm_result.present)
     {
-        (void)fprintf(stderr, "Failed to run nasm\n");
+        (void)fprintf(err, "Failed to run nasm\n");
         del_dir(str_ref(temp_dir));
         exit(1);
     }
@@ -77,7 +75,7 @@ void mkexe(WaccProgram program, str exe_output)
         PROCESS_OPTION_COMBINED_STDOUT_STDERR | PROCESS_OPTION_SEARCH_USER_PATH);
     if (!ld_result.present)
     {
-        (void)fprintf(stderr, "Failed to run ld\n");
+        (void)fprintf(err, "Failed to run ld\n");
         del_dir(str_ref(temp_dir));
         exit(1);
     }
