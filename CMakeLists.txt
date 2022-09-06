@@ -4,7 +4,6 @@ project(wacc LANGUAGES C)
 
 add_subdirectory(deps/dparser)
 
-add_executable(embed src/embed/embed.c)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake
      ${CMAKE_CURRENT_BINARY_DIR}/deps/dparser
 )
