@@ -2,3 +2,9 @@
 	path = deps/dparser
 	url = https://github.com/Phytolizer/dparser
 	branch = c-update
+[submodule "deps/hedley/repo"]
+	path = deps/hedley/repo
+	url = https://github.com/nemequ/hedley.git
+[submodule "deps/c-argparser/repo"]
+	path = deps/c-argparser/repo
+	url = https://github.com/Phytolizer/c-argparser.git

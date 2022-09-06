@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.23)
 
 project(wacc LANGUAGES C)
 
+add_subdirectory(deps/c-argparser)
 add_subdirectory(deps/dparser)
+add_subdirectory(deps/hedley)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake
      ${CMAKE_CURRENT_BINARY_DIR}/deps/dparser
@@ -15,7 +17,7 @@ prepend_path(STR_SRC src/str STR_SRC_REL)
 add_library(str ${STR_SRC_REL})
 target_include_directories(str PUBLIC include)
 
-set(WACC_SRC main.c ast.c)
+set(WACC_SRC main.c ast.c codegen.c)
 prepend_path(WACC_SRC src/wacc WACC_SRC_REL)
 add_executable(wacc ${WACC_SRC_REL})
 
@@ -36,4 +38,6 @@ target_include_directories(
           ${CMAKE_CURRENT_BINARY_DIR}/embedded/include
           ${CMAKE_CURRENT_SOURCE_DIR}/deps/dparser
 )
-target_link_libraries(wacc PRIVATE str dparser::dparse)
+target_link_libraries(
+  wacc PRIVATE str dparser::dparse hedley::hedley c-argparser::c-argparser
+)
