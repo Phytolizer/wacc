@@ -239,7 +239,6 @@ static void codegen_binary_expression(CodeGenerator* gen, FILE* fp, WaccBinaryEx
             emit(gen, fp, "sal rax, cl");
             break;
         case WACC_BINARY_OP_BITWISE_RSHIFT:
-            // lhs >> rhs
             codegen_expression(gen, fp, binary->lhs);
             emit(gen, fp, "push rax");
             codegen_expression(gen, fp, binary->rhs);
