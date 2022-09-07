@@ -67,6 +67,46 @@ static void codegen_constant_expression(CodeGenerator* gen, FILE* fp, WaccConsta
     emit(gen, fp, "mov rax, %" PRIu64, constant->value);
 }
 
+static void codegen_binary_expression(CodeGenerator* gen, FILE* fp, WaccBinaryExpression* binary)
+{
+    switch (binary->op)
+    {
+        case WACC_BINARY_OP_ADDITION:
+            codegen_expression(gen, fp, binary->lhs);
+            emit(gen, fp, "push rax");
+            codegen_expression(gen, fp, binary->rhs);
+            emit(gen, fp, "pop rsi");
+            emit(gen, fp, "add rax, rsi");
+            break;
+        case WACC_BINARY_OP_SUBTRACTION:
+            codegen_expression(gen, fp, binary->lhs);
+            emit(gen, fp, "push rax");
+            codegen_expression(gen, fp, binary->rhs);
+            emit(gen, fp, "pop rsi");
+            emit(gen, fp, "sub rsi, rax");
+            emit(gen, fp, "mov rax, rsi");
+            break;
+        case WACC_BINARY_OP_MULTIPLICATION:
+            codegen_expression(gen, fp, binary->lhs);
+            emit(gen, fp, "push rax");
+            codegen_expression(gen, fp, binary->rhs);
+            emit(gen, fp, "pop rsi");
+            emit(gen, fp, "imul rsi");
+            break;
+        case WACC_BINARY_OP_DIVISION:
+            // lhs / rhs
+            codegen_expression(gen, fp, binary->lhs);
+            emit(gen, fp, "push rax");
+            codegen_expression(gen, fp, binary->rhs);
+            emit(gen, fp, "pop rsi");
+            emit(gen, fp, "mov rdi, rax");
+            emit(gen, fp, "mov rax, rsi");
+            emit(gen, fp, "cqo");
+            emit(gen, fp, "idiv rdi");
+            break;
+    }
+}
+
 static void codegen_expression(CodeGenerator* gen, FILE* fp, WaccExpression* expression)
 {
     switch (expression->kind)
@@ -76,6 +116,9 @@ static void codegen_expression(CodeGenerator* gen, FILE* fp, WaccExpression* exp
             break;
         case WACC_EXPR_KIND_CONSTANT:
             codegen_constant_expression(gen, fp, (WaccConstantExpression*)expression);
+            break;
+        case WACC_EXPR_KIND_BINARY:
+            codegen_binary_expression(gen, fp, (WaccBinaryExpression*)expression);
             break;
         default:
             HEDLEY_UNREACHABLE();

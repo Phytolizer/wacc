@@ -36,6 +36,21 @@ typedef struct
     WaccExpression* expr;
 } WaccUnaryExpression;
 
+typedef enum
+{
+#define X(x) WACC_BINARY_OP_##x,
+#include "wacc/ast/binary_op_kinds.def"
+#undef X
+} WaccBinaryOperation;
+
+typedef struct
+{
+    WaccExpression base;
+    WaccBinaryOperation op;
+    WaccExpression* lhs;
+    WaccExpression* rhs;
+} WaccBinaryExpression;
+
 typedef struct
 {
     WaccExpression* expression;
@@ -69,12 +84,14 @@ typedef struct
         WaccStatement statement;
         WaccExpression* expression;
         WaccUnaryOperation unary_op;
+        WaccBinaryOperation binary_op;
     } as;
 } WaccNode;
 #define D_ParseNode_User WaccNode
 
 WaccExpression* wacc_expr_new_unary(WaccUnaryOperation op, WaccExpression* expr);
 WaccExpression* wacc_expr_new_constant(uint64_t value);
+WaccExpression* wacc_expr_new_binary(WaccExpression* lhs, WaccBinaryOperation op, WaccExpression* rhs);
 
 void ast_show(WaccNode root, FILE* out, FILE* err);
 void ast_free(WaccNode root);

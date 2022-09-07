@@ -10,6 +10,12 @@ static const char* UNARY_OP_STRINGS[] = {
 #undef X
 };
 
+static const char* BINARY_OP_STRINGS[] = {
+#define X(x) #x,
+#include "wacc/ast/binary_op_kinds.def"
+#undef X
+};
+
 typedef struct
 {
     uint64_t depth;
@@ -36,6 +42,15 @@ static void show_expression(WaccExpression* expression, FILE* out)
             WaccUnaryExpression* unary = (WaccUnaryExpression*)expression;
             (void)fprintf(out, "%s ", UNARY_OP_STRINGS[unary->op]);
             show_expression(unary->expr, out);
+            break;
+        }
+        case WACC_EXPR_KIND_BINARY: {
+            WaccBinaryExpression* binary = (WaccBinaryExpression*)expression;
+            (void)fprintf(out, "(");
+            show_expression(binary->lhs, out);
+            (void)fprintf(out, " %s ", BINARY_OP_STRINGS[binary->op]);
+            show_expression(binary->rhs, out);
+            (void)fprintf(out, ")");
             break;
         }
         default: {
@@ -85,6 +100,16 @@ WaccExpression* wacc_expr_new_constant(uint64_t value)
     return (WaccExpression*)constant;
 }
 
+WaccExpression* wacc_expr_new_binary(WaccExpression* lhs, WaccBinaryOperation op, WaccExpression* rhs)
+{
+    WaccBinaryExpression* binary = malloc(sizeof(WaccBinaryExpression));
+    binary->base.kind = WACC_EXPR_KIND_BINARY;
+    binary->op = op;
+    binary->lhs = lhs;
+    binary->rhs = rhs;
+    return (WaccExpression*)binary;
+}
+
 void ast_show(WaccNode root, FILE* out, FILE* err)
 {
     AstDumper d = {0};
@@ -111,6 +136,10 @@ static void expression_free(WaccExpression* expression)
             break;
         case WACC_EXPR_KIND_UNARY:
             expression_free(((WaccUnaryExpression*)expression)->expr);
+            break;
+        case WACC_EXPR_KIND_BINARY:
+            expression_free(((WaccBinaryExpression*)expression)->lhs);
+            expression_free(((WaccBinaryExpression*)expression)->rhs);
             break;
         default:
             HEDLEY_UNREACHABLE();
