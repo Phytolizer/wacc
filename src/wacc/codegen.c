@@ -94,7 +94,6 @@ static void codegen_binary_expression(CodeGenerator* gen, FILE* fp, WaccBinaryEx
             emit(gen, fp, "imul rsi");
             break;
         case WACC_BINARY_OP_DIVISION:
-            // lhs / rhs
             codegen_expression(gen, fp, binary->lhs);
             emit(gen, fp, "push rax");
             codegen_expression(gen, fp, binary->rhs);
