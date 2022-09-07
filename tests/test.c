@@ -15,7 +15,7 @@
 
 enum
 {
-    IMPLEMENTED_STAGES = 3
+    IMPLEMENTED_STAGES = 4
 };
 
 typedef struct

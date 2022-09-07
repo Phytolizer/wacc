@@ -36,6 +36,7 @@ set(GRAMMAR_G_FILE ${CMAKE_CURRENT_BINARY_DIR}/include/grammar.g)
 set(GRAMMAR_C_FILE ${CMAKE_CURRENT_BINARY_DIR}/grammar.g.c)
 add_custom_command(
   OUTPUT ${GRAMMAR_C_FILE}
+         ${CMAKE_CURRENT_BINARY_DIR}/include/grammar.g.d_parser.h
   DEPENDS ${GRAMMAR_G_FILE} dparser::make_dparser
   VERBATIM
   COMMAND dparser::make_dparser ${GRAMMAR_G_FILE} -o ${GRAMMAR_C_FILE} -i wacc
