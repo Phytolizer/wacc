@@ -33,7 +33,13 @@ statement: KW_RETURN expression ';'
   $$.as.statement.expression = $1.as.expression;
 };
 
-expression: NUMBER
+expression:
+    unary_op expression
+{
+  $$.kind = WACC_NODE_EXPRESSION;
+  $$.as.expression = wacc_expr_new_unary($0.as.unary_op, $1.as.expression);
+}
+  | NUMBER
 {
   $$.kind = WACC_NODE_EXPRESSION;
   str num_str = str_ref_node($n0);
@@ -43,7 +49,24 @@ expression: NUMBER
     fprintf(stderr, "Error: %s\n", strerror(result.err));
     exit(1);
   }
-  $$.as.expression.value = result.value;
+  $$.as.expression = wacc_expr_new_constant(result.value);
+};
+
+unary_op:
+  '-'
+{
+  $$.kind = WACC_NODE_UNARY_OP;
+  $$.as.unary_op = WACC_UNARY_OP_ARITHMETIC_NEGATION;
+}
+  | '!'
+{
+  $$.kind = WACC_NODE_UNARY_OP;
+  $$.as.unary_op = WACC_UNARY_OP_LOGICAL_NEGATION;
+}
+  | '~'
+{
+  $$.kind = WACC_NODE_UNARY_OP;
+  $$.as.unary_op = WACC_UNARY_OP_BITWISE_NEGATION;
 };
 
 IDENT: "[a-zA-Z_][a-zA-Z0-9_]*";

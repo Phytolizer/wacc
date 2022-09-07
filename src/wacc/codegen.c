@@ -36,9 +36,50 @@ static void HEDLEY_PRINTF_FORMAT(2, 3) emit_label(FILE* fp, const char* fmt, ...
     va_end(args);
 }
 
-static void codegen_expression(CodeGenerator* gen, FILE* fp, WaccExpression expression)
+static void codegen_expression(CodeGenerator* gen, FILE* fp, WaccExpression* expression);
+
+static void codegen_unary_expression(CodeGenerator* gen, FILE* fp, WaccUnaryExpression* unary)
 {
-    emit(gen, fp, "mov rax, %" PRIu64, expression.value);
+    switch (unary->op)
+    {
+        case WACC_UNARY_OP_ARITHMETIC_NEGATION:
+            codegen_expression(gen, fp, unary->expr);
+            emit(gen, fp, "neg rax");
+            break;
+        case WACC_UNARY_OP_LOGICAL_NEGATION:
+            codegen_expression(gen, fp, unary->expr);
+            emit(gen, fp, "cmp rax, 0");
+            emit(gen, fp, "sete al");
+            emit(gen, fp, "movzx rax, al");
+            break;
+        case WACC_UNARY_OP_BITWISE_NEGATION:
+            codegen_expression(gen, fp, unary->expr);
+            emit(gen, fp, "not rax");
+            break;
+        default:
+            (void)fprintf(fp, "unknown unary operation");
+            break;
+    }
+}
+
+static void codegen_constant_expression(CodeGenerator* gen, FILE* fp, WaccConstantExpression* constant)
+{
+    emit(gen, fp, "mov rax, %" PRIu64, constant->value);
+}
+
+static void codegen_expression(CodeGenerator* gen, FILE* fp, WaccExpression* expression)
+{
+    switch (expression->kind)
+    {
+        case WACC_EXPR_KIND_UNARY:
+            codegen_unary_expression(gen, fp, (WaccUnaryExpression*)expression);
+            break;
+        case WACC_EXPR_KIND_CONSTANT:
+            codegen_constant_expression(gen, fp, (WaccConstantExpression*)expression);
+            break;
+        default:
+            HEDLEY_UNREACHABLE();
+    }
 }
 
 static void codegen_statement(CodeGenerator* gen, FILE* fp, WaccStatement statement)

@@ -4,14 +4,41 @@
 
 #include <stdint.h>
 
+typedef enum
+{
+#define X(x) WACC_EXPR_KIND_##x,
+#include "wacc/ast_expr_kinds.def"
+#undef X
+} WaccExpressionKind;
+
 typedef struct
 {
-    uint64_t value;
+    WaccExpressionKind kind;
 } WaccExpression;
 
 typedef struct
 {
-    WaccExpression expression;
+    WaccExpression base;
+    uint64_t value;
+} WaccConstantExpression;
+
+typedef enum
+{
+#define X(x) WACC_UNARY_OP_##x,
+#include "wacc/ast_unary_op_kinds.def"
+#undef X
+} WaccUnaryOperation;
+
+typedef struct
+{
+    WaccExpression base;
+    WaccUnaryOperation op;
+    WaccExpression* expr;
+} WaccUnaryExpression;
+
+typedef struct
+{
+    WaccExpression* expression;
 } WaccStatement;
 
 typedef struct
@@ -40,10 +67,14 @@ typedef struct
         WaccProgram program;
         WaccFunction function;
         WaccStatement statement;
-        WaccExpression expression;
+        WaccExpression* expression;
+        WaccUnaryOperation unary_op;
     } as;
 } WaccNode;
 #define D_ParseNode_User WaccNode
+
+WaccExpression* wacc_expr_new_unary(WaccUnaryOperation op, WaccExpression* expr);
+WaccExpression* wacc_expr_new_constant(uint64_t value);
 
 void ast_show(WaccNode root, FILE* out, FILE* err);
 void ast_free(WaccNode root);
