@@ -7,7 +7,7 @@
 typedef enum
 {
 #define X(x) WACC_EXPR_KIND_##x,
-#include "wacc/ast_expr_kinds.def"
+#include "wacc/ast/expr_kinds.def"
 #undef X
 } WaccExpressionKind;
 
@@ -25,7 +25,7 @@ typedef struct
 typedef enum
 {
 #define X(x) WACC_UNARY_OP_##x,
-#include "wacc/ast_unary_op_kinds.def"
+#include "wacc/ast/unary_op_kinds.def"
 #undef X
 } WaccUnaryOperation;
 
@@ -55,7 +55,7 @@ typedef struct
 typedef enum
 {
 #define X(x) WACC_NODE_##x,
-#include "wacc/node_kinds.def"
+#include "wacc/ast/node_kinds.def"
 #undef X
 } WaccNodeKind;
 

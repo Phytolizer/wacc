@@ -6,7 +6,7 @@
 
 static const char* UNARY_OP_STRINGS[] = {
 #define X(x) #x,
-#include "wacc/ast_unary_op_kinds.def"
+#include "wacc/ast/unary_op_kinds.def"
 #undef X
 };
 
