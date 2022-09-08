@@ -5,6 +5,7 @@ project(wacc LANGUAGES C)
 add_subdirectory(deps/c-argparser)
 add_subdirectory(deps/dparser)
 add_subdirectory(deps/hedley)
+add_subdirectory(deps/uthash)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake
      ${CMAKE_CURRENT_BINARY_DIR}/deps/dparser
@@ -60,8 +61,14 @@ target_include_directories(
          ${CMAKE_CURRENT_SOURCE_DIR}/deps/dparser
 )
 target_link_libraries(
-  wacc PUBLIC str file process dparser::dparse hedley::hedley
-              c-argparser::c-argparser
+  wacc
+  PUBLIC str
+         file
+         process
+         dparser::dparse
+         hedley::hedley
+         c-argparser::c-argparser
+         uthash::uthash
 )
 
 add_executable(wacc_driver src/wacc_driver/main.c)
