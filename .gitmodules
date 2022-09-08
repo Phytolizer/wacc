@@ -8,6 +8,3 @@
 [submodule "deps/c-argparser/repo"]
 	path = deps/c-argparser/repo
 	url = https://github.com/Phytolizer/c-argparser.git
-[submodule "deps/libjudy"]
-	path = deps/libjudy
-	url = https://github.com/netdata/libjudy
