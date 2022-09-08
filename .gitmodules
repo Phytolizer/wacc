@@ -2,3 +2,6 @@
 	path = deps/dparser
 	url = https://github.com/Phytolizer/dparser
 	branch = c-update
+[submodule "deps/packcc/repo"]
+	path = deps/packcc/repo
+	url = https://github.com/arithy/packcc.git
