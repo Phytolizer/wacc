@@ -170,11 +170,9 @@ int str_cat_range(str* dest, const str* src, size_t count);
 int str_join_range(str* dest, str sep, const str* src, size_t count);
 
 // join string arguments around the separator
-#define str_join(dest, sep, ...) \
-    ({ \
-        const str args[] = {__VA_ARGS__}; \
-        str_join_range((dest), (sep), args, sizeof(args) / sizeof(args[0])); \
-    })
+#define str_join(dest, sep, ...) str_join_range((dest), (sep), ARRAYOF_(__VA_ARGS__))
+
+#define path_join(dest, ...) str_join((dest), str_lit("/"), __VA_ARGS__)
 
 // constructors ----------------------------------------------------------------------------
 // string reference from a string literal
@@ -198,6 +196,8 @@ str str_acquire_chars(const char* s, size_t n);
 
 // take ownership of the given string
 str str_acquire(const char* s);
+
+str str_printf(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
 
 // searching and sorting --------------------------------------------------------------------
 // string partitioning (substring search)
@@ -233,6 +233,9 @@ typedef struct
 void str_tok_init(str_tok_state* state, str src, str delim_set);
 bool str_tok(str* dest, str_tok_state* state);
 void str_tok_delim(str_tok_state* state, str delim_set);
+
+#define str_fmt "%.*s"
+#define str_arg(s) (int)(s).len, str_ptr(s)
 
 #ifdef __cplusplus
 }

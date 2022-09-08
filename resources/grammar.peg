@@ -1,0 +1,72 @@
+%prefix "wacc"
+
+%header {
+#include "wacc/ast.h"
+#include "wacc/system.h"
+
+#include <str/str.h>
+#include <str/strtox.h>
+}
+
+%value "WaccNode*"
+%auxil "WaccSystem*"
+
+%source {
+#define PCC_ERROR(auxil) wacc_system_handle_error(auxil, ERROR_UNKNOWN, range_null)
+#define PCC_GETCHAR(auxil) wacc_system_read_source(auxil)
+}
+
+program <- f:function _ end_of_file
+    {
+        $$ = wacc_node_new_program(f->as.function);
+        free(f);
+    }
+
+function <- 'int' space n:ident _ '(' _ ')' _ '{' _ body:statement _ '}' _
+    {
+        $$ = wacc_node_new_function(n->as.text, body->as.statement);
+        free(n);
+        free(body);
+    }
+
+statement <- 'return' space v:expression _ ';'
+    {
+        $$ = wacc_node_new_statement(v->as.expression);
+        free(v);
+    }
+
+expression <- v:number
+    {
+        str text = v->as.text;
+        free(v);
+        Str2U64Result result = str2u64(text, 10);
+        if (!result.err)
+        {
+            $$ = wacc_node_new_expression(result.value);
+        }
+        else
+        {
+            wacc_system_handle_error(auxil, ERROR_ILLEGAL_UINT64, range_new($0s, $0e));
+            $$ = wacc_error_node_expression();
+        }
+    }
+
+ident <- [a-zA-Z_][a-zA-Z0-9_]*
+    {
+        $$ = malloc(sizeof(WaccNode));
+        $$->kind = WACC_NODE_TEXT;
+        $$->as.text = str_ref_chars($0, $0e - $0s + 1);
+    }
+
+number <- [0-9]+
+    {
+        $$ = malloc(sizeof(WaccNode));
+        $$->kind = WACC_NODE_TEXT;
+        $$->as.text = str_ref_chars($0, $0e - $0s + 1);
+    }
+
+_ <- ws*
+space <- ws+
+ws <- [ \t\r\n]
+
+end_of_file <- !.

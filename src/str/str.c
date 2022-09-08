@@ -38,6 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -200,6 +201,41 @@ str str_acquire_chars(const char* const s, const size_t n)
 str str_acquire(const char* const s)
 {
     return s ? str_acquire_chars(s, strlen(s)) : str_null;
+}
+
+static str str_vprintf(const char* const fmt, va_list ap)
+{
+    va_list ap2;
+    va_copy(ap2, ap);
+
+    const int n = vsnprintf(NULL, 0, fmt, ap2);
+
+    va_end(ap2);
+
+    if (n < 0)
+    {
+        return str_null;
+    }
+
+    char* const s = malloc((size_t)n + 1);
+
+    if (!s)
+    {
+        return str_null;
+    }
+
+    (void)vsnprintf(s, (size_t)n + 1, fmt, ap);
+
+    return str_acquire_chars(s, n);
+}
+
+str str_printf(const char* fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    str s = str_vprintf(fmt, args);
+    va_end(args);
+    return s;
 }
 
 // allocate a copy of the given string
