@@ -28,7 +28,7 @@ typedef struct
 typedef enum
 {
 #define X(x) WACC_NODE_##x,
-#include "wacc/node_kinds.def"
+#include "wacc/ast/node_kinds.def"
 #undef X
 } WaccNodeKind;
 
