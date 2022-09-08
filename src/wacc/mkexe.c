@@ -46,14 +46,21 @@ static void del_dir(str path)
     str_free(path);
 }
 
-void mkexe(WaccProgram program, str exe_output, FILE* err)
+int mkexe(WaccProgram program, str exe_output, FILE* err)
 {
     char temp_template[] = "wacc-XXXXXX";
     char* temp_dir = mkdtemp(temp_template);
     str asm_source = str_null;
     path_join(&asm_source, str_ref(temp_dir), str_lit("wacc.s"));
     FILE* asm_fp = fopen(asm_source.ptr, "w");
-    codegen_program(program, asm_fp);
+    CodegenError error = codegen_program(program, asm_fp);
+    if (error.present)
+    {
+        (void)fprintf(err, str_fmt "\n", str_arg(error.value));
+        str_free(error.value);
+        del_dir(str_ref(temp_dir));
+        return 1;
+    }
     (void)fclose(asm_fp);
 
     str obj_path = str_null;
@@ -83,4 +90,5 @@ void mkexe(WaccProgram program, str exe_output, FILE* err)
 
     str_free(obj_path);
     del_dir(str_ref(temp_dir));
+    return 0;
 }

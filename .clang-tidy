@@ -30,6 +30,7 @@ Checks: |
   -readability-function-cognitive-complexity,
   -readability-magic-numbers,
   -readability-identifier-naming,
+  -readability-isolate-declaration,
 WarningsAsErrors: ""
 CheckOptions:
   - key: "bugprone-argument-comment.StrictMode"

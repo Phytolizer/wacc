@@ -60,21 +60,70 @@ static void show_expression(WaccExpression* expression, FILE* out)
     }
 }
 
-static void show_statement(AstDumper* d, WaccStatement statement, FILE* out)
+static void show_return_statement(AstDumper* d, WaccReturnStatement* statement, FILE* out)
 {
     show_indent(d, out);
     (void)fprintf(out, "RETURN:\n");
     d->depth++;
     show_indent(d, out);
-    show_expression(statement.expression, out);
+    show_expression(statement->expression, out);
+    (void)fprintf(out, "\n");
     d->depth--;
+}
+
+static void show_expression_statement(AstDumper* d, WaccExpressionStatement* statement, FILE* out)
+{
+    show_indent(d, out);
+    (void)fprintf(out, "EXPRESSION:\n");
+    d->depth++;
+    show_indent(d, out);
+    show_expression(statement->expression, out);
+    (void)fprintf(out, "\n");
+    d->depth--;
+}
+
+static void show_declare_statement(AstDumper* d, WaccDeclareStatement* statement, FILE* out)
+{
+    show_indent(d, out);
+    (void)fprintf(out, "DECLARE: " str_fmt "\n", str_arg(statement->name));
+    if (statement->initializer)
+    {
+        d->depth++;
+        show_indent(d, out);
+        show_expression(statement->initializer, out);
+        (void)fprintf(out, "\n");
+        d->depth--;
+    }
+}
+
+static void show_statement(AstDumper* d, WaccStatement* statement, FILE* out)
+{
+    switch (statement->kind)
+    {
+        case WACC_STMT_KIND_RETURN:
+            show_return_statement(d, (WaccReturnStatement*)statement, out);
+            break;
+        case WACC_STMT_KIND_EXPRESSION:
+            show_expression_statement(d, (WaccExpressionStatement*)statement, out);
+            break;
+        case WACC_STMT_KIND_DECLARE:
+            show_declare_statement(d, (WaccDeclareStatement*)statement, out);
+            break;
+        default: {
+            (void)fprintf(out, "unknown statement");
+            break;
+        }
+    }
 }
 
 static void show_function(AstDumper* d, WaccFunction function, FILE* out)
 {
     (void)fprintf(out, "FUNCTION " str_fmt ":\n", str_arg(function.name));
     d->depth++;
-    show_statement(d, function.statement, out);
+    for (uint64_t i = 0; i < function.statements.len; i++)
+    {
+        show_statement(d, function.statements.ptr[i], out);
+    }
     d->depth--;
 }
 
@@ -110,6 +159,48 @@ WaccExpression* wacc_expr_new_binary(WaccExpression* lhs, WaccBinaryOperation op
     return (WaccExpression*)binary;
 }
 
+WaccExpression* wacc_expr_new_variable(str name)
+{
+    WaccVariableExpression* variable = malloc(sizeof(WaccVariableExpression));
+    variable->base.kind = WACC_EXPR_KIND_VARIABLE;
+    variable->name = name;
+    return (WaccExpression*)variable;
+}
+
+WaccExpression* wacc_expr_new_assignment(str name, WaccExpression* expr)
+{
+    WaccAssignmentExpression* assignment = malloc(sizeof(WaccAssignmentExpression));
+    assignment->base.kind = WACC_EXPR_KIND_ASSIGNMENT;
+    assignment->name = name;
+    assignment->expr = expr;
+    return (WaccExpression*)assignment;
+}
+
+WaccStatement* wacc_stmt_new_declare(str name, WaccExpression* initializer)
+{
+    WaccDeclareStatement* declare = malloc(sizeof(WaccDeclareStatement));
+    declare->base.kind = WACC_STMT_KIND_DECLARE;
+    declare->name = name;
+    declare->initializer = initializer;
+    return (WaccStatement*)declare;
+}
+
+WaccStatement* wacc_stmt_new_return(WaccExpression* expression)
+{
+    WaccReturnStatement* ret = malloc(sizeof(WaccReturnStatement));
+    ret->base.kind = WACC_STMT_KIND_RETURN;
+    ret->expression = expression;
+    return (WaccStatement*)ret;
+}
+
+WaccStatement* wacc_stmt_new_expression(WaccExpression* expression)
+{
+    WaccExpressionStatement* expr = malloc(sizeof(WaccExpressionStatement));
+    expr->base.kind = WACC_STMT_KIND_EXPRESSION;
+    expr->expression = expression;
+    return (WaccStatement*)expr;
+}
+
 void ast_show(WaccNode root, FILE* out, FILE* err)
 {
     AstDumper d = {0};
@@ -141,10 +232,42 @@ static void expression_free(WaccExpression* expression)
             expression_free(((WaccBinaryExpression*)expression)->lhs);
             expression_free(((WaccBinaryExpression*)expression)->rhs);
             break;
+        case WACC_EXPR_KIND_ASSIGNMENT:
+            str_free(((WaccAssignmentExpression*)expression)->name);
+            expression_free(((WaccAssignmentExpression*)expression)->expr);
+            break;
+        case WACC_EXPR_KIND_VARIABLE:
+            str_free(((WaccVariableExpression*)expression)->name);
+            break;
         default:
-            HEDLEY_UNREACHABLE();
+            // invalid, ignore
+            break;
     }
     free(expression);
+}
+
+static void statement_free(WaccStatement* statement)
+{
+    if (statement == NULL)
+    {
+        return;
+    }
+    switch (statement->kind)
+    {
+        case WACC_STMT_KIND_DECLARE:
+            expression_free(((WaccDeclareStatement*)statement)->initializer);
+            break;
+        case WACC_STMT_KIND_RETURN:
+            expression_free(((WaccReturnStatement*)statement)->expression);
+            break;
+        case WACC_STMT_KIND_EXPRESSION:
+            expression_free(((WaccExpressionStatement*)statement)->expression);
+            break;
+        default:
+            // invalid, ignore
+            break;
+    }
+    free(statement);
 }
 
 void ast_free(WaccNode root)
@@ -153,7 +276,11 @@ void ast_free(WaccNode root)
     {
         case WACC_NODE_PROGRAM:
             str_free(root.as.program.function.name);
-            expression_free(root.as.program.function.statement.expression);
+            for (uint64_t i = 0; i < root.as.program.function.statements.len; i++)
+            {
+                statement_free(root.as.program.function.statements.ptr[i]);
+            }
+            BUF_FREE(root.as.program.function.statements);
             break;
         default:
             (void)fprintf(stderr, "That's not a root node!\n");

@@ -15,18 +15,26 @@ include(PrependPath)
 
 add_library(sum INTERFACE)
 target_include_directories(sum INTERFACE include)
+add_library(sum::sum ALIAS sum)
+
+add_library(buf INTERFACE)
+target_include_directories(buf INTERFACE include)
+add_library(buf::buf ALIAS buf)
 
 set(STR_SRC str.c strtox.c)
 prepend_path(STR_SRC src/str STR_SRC_REL)
 add_library(str ${STR_SRC_REL})
 target_include_directories(str PUBLIC include)
+add_library(str::str ALIAS str)
 
 add_library(process src/process/process.c)
 target_include_directories(process PUBLIC include)
+add_library(process::process ALIAS process)
 
 add_library(file src/file/file.c)
 target_include_directories(file PUBLIC include)
-target_link_libraries(file PUBLIC str sum)
+target_link_libraries(file PUBLIC str sum::sum)
+add_library(file::file ALIAS file)
 
 set(WACC_SRC run.c ast.c codegen.c mkexe.c scan.c)
 prepend_path(WACC_SRC src/wacc WACC_SRC_REL)
@@ -62,13 +70,15 @@ target_include_directories(
 )
 target_link_libraries(
   wacc
-  PUBLIC str
-         file
-         process
-         dparser::dparse
-         hedley::hedley
-         c-argparser::c-argparser
-         uthash::uthash
+  PRIVATE str::str
+          sum::sum
+          file::file
+          process::process
+          dparser::dparse
+          hedley::hedley
+          c-argparser::c-argparser
+          uthash::uthash
+  PUBLIC buf::buf
 )
 
 add_executable(wacc_driver src/wacc_driver/main.c)

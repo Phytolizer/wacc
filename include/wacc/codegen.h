@@ -2,6 +2,10 @@
 
 #include "wacc/ast.h"
 
+#include <hedley.h>
 #include <stdio.h>
+#include <sum/sum.h>
 
-void codegen_program(WaccProgram program, FILE* fp);
+typedef MAYBE(str) CodegenError;
+
+HEDLEY_WARN_UNUSED_RESULT CodegenError codegen_program(WaccProgram program, FILE* fp);

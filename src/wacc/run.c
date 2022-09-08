@@ -21,17 +21,17 @@ int run(Argv argv, FILE* out, FILE* err)
     ArgParser parser =
         arg_parser_new(arg_str_lit("wacc"), arg_str_lit("What A C Compiler!"), (ArgBuf)ARG_BUF_ARRAY(args));
     ArgParseErr arg_parse_err = arg_parser_parse(&parser, (int)argv.len, argv.ptr);
+    if (help_arg.flagValue)
+    {
+        arg_parser_show_help(&parser, stdout);
+        return 0;
+    }
     if (arg_parse_err.present)
     {
         arg_parser_show_help(&parser, stderr);
         (void)fprintf(err, "ERROR: " ARG_STR_FMT "\n", ARG_STR_ARG(arg_parse_err.value));
         arg_str_free(arg_parse_err.value);
         return 1;
-    }
-    if (help_arg.flagValue)
-    {
-        arg_parser_show_help(&parser, stdout);
-        return 0;
     }
     D_Parser* p = new_D_Parser(&parser_tables_wacc, sizeof(WaccNode));
     p->save_parse_tree = true;
@@ -53,7 +53,7 @@ int run(Argv argv, FILE* out, FILE* err)
         {
             output = str_ref_chars(output_arg.value.ptr, arg_str_len(output_arg.value));
         }
-        mkexe(pn->user.as.program, output, err);
+        ret = mkexe(pn->user.as.program, output, err);
         ast_free(pn->user);
         free_D_ParseNode(p, pn);
     }

@@ -5,4 +5,4 @@
 #include <stdio.h>
 #include <str/str.h>
 
-void mkexe(WaccProgram program, str exe_output, FILE* err);
+int mkexe(WaccProgram program, str exe_output, FILE* err);

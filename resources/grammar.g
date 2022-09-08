@@ -19,22 +19,75 @@ program: function
   $$.as.program.function = $0.as.function;
 };
 
-function: KW_INT TT_IDENT '(' ')' '{' statement '}'
+function: KW_INT TT_IDENT '(' ')' '{' statements '}'
 {
   $$.kind = WACC_NODE_FUNCTION;
   $$.as.function.name = str_null;
   str_cpy(&($$.as.function.name), str_ref_node($n1));
-  $$.as.function.statement = $5.as.statement;
+  $$.as.function.statements = $5.as.statement_list;
 };
 
-statement: KW_RETURN expression ';'
-{
-  $$.kind = WACC_NODE_STATEMENT;
-  $$.as.statement.expression = $1.as.expression;
-};
+statements:
+  statements statement
+    {
+      $$.kind = WACC_NODE_STATEMENT_LIST;
+      $$.as.statement_list = $1.as.statement_list;
+      if ($0.as.statement)
+      {
+        BUF_PUSH(&($$.as.statement_list), $0.as.statement);
+      }
+    }
+  |
+    {
+      $$.kind = WACC_NODE_STATEMENT_LIST;
+      $$.as.statement_list = (WaccStatementList)BUF_NEW;
+    }
+  ;
+
+statement:
+  KW_RETURN expression ';'
+    {
+      $$.kind = WACC_NODE_STATEMENT;
+      $$.as.statement = wacc_stmt_new_return($1.as.expression);
+    }
+  | KW_INT TT_IDENT ';'
+    {
+      $$.kind = WACC_NODE_STATEMENT;
+      str name = str_null;
+      str_cpy(&name, str_ref_node($n1));
+      $$.as.statement = wacc_stmt_new_declare(name, NULL);
+    }
+  | KW_INT TT_IDENT '=' expression ';'
+    {
+      $$.kind = WACC_NODE_STATEMENT;
+      str name = str_null;
+      str_cpy(&name, str_ref_node($n1));
+      $$.as.statement = wacc_stmt_new_declare(name, $3.as.expression);
+    }
+  | expression ';'
+    {
+      $$.kind = WACC_NODE_STATEMENT;
+      $$.as.statement = wacc_stmt_new_expression($0.as.expression);
+    }
+  ;
 
 expression:
-  expression '||' logical_and_exp
+  TT_IDENT '=' expression
+    {
+      $$.kind = WACC_NODE_EXPRESSION;
+      str name = str_null;
+      str_cpy(&name, str_ref_node($n0));
+      $$.as.expression = wacc_expr_new_assignment(name, $2.as.expression);
+    }
+  | logical_or_exp
+    {
+      $$.kind = WACC_NODE_EXPRESSION;
+      $$.as.expression = $0.as.expression;
+    }
+  ;
+
+logical_or_exp:
+  logical_or_exp '||' logical_and_exp
     {
       $$.kind = WACC_NODE_EXPRESSION;
       $$.as.expression = wacc_expr_new_binary($0.as.expression, WACC_BINARY_OP_LOGICAL_OR, $2.as.expression);
@@ -176,6 +229,13 @@ factor:
       }
       $$.as.expression = wacc_expr_new_constant(result.value);
     }
+  | TT_IDENT
+    {
+      $$.kind = WACC_NODE_EXPRESSION;
+      str name = str_null;
+      str_cpy(&name, str_ref_node($n0));
+      $$.as.expression = wacc_expr_new_variable(name);
+    }
   ;
 
 unary_op:
@@ -275,8 +335,6 @@ shift_op:
       $$.as.binary_op = WACC_BINARY_OP_BITWISE_RSHIFT;
     }
   ;
-
-IDENT: "[a-zA-Z_][a-zA-Z0-9_]*";
 
 NUMBER: "[0-9]+";
 

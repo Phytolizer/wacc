@@ -1,8 +1,8 @@
 #pragma once
 
-#include "str/str.h"
-
+#include <buf/buf.h>
 #include <stdint.h>
+#include <str/str.h>
 
 typedef enum
 {
@@ -53,13 +53,54 @@ typedef struct
 
 typedef struct
 {
-    WaccExpression* expression;
+    WaccExpression base;
+    str name;
+} WaccVariableExpression;
+
+typedef struct
+{
+    WaccExpression base;
+    str name;
+    WaccExpression* expr;
+} WaccAssignmentExpression;
+
+typedef enum
+{
+#define X(x) WACC_STMT_KIND_##x,
+#include "wacc/ast/stmt_kinds.def"
+#undef X
+} WaccStatementKind;
+
+typedef struct
+{
+    WaccStatementKind kind;
 } WaccStatement;
 
 typedef struct
 {
+    WaccStatement base;
     str name;
-    WaccStatement statement;
+    WaccExpression* initializer;
+} WaccDeclareStatement;
+
+typedef struct
+{
+    WaccStatement base;
+    WaccExpression* expression;
+} WaccReturnStatement;
+
+typedef struct
+{
+    WaccStatement base;
+    WaccExpression* expression;
+} WaccExpressionStatement;
+
+typedef BUF(WaccStatement*) WaccStatementList;
+
+typedef struct
+{
+    str name;
+    WaccStatementList statements;
 } WaccFunction;
 
 typedef struct
@@ -81,7 +122,8 @@ typedef struct
         str text;
         WaccProgram program;
         WaccFunction function;
-        WaccStatement statement;
+        WaccStatement* statement;
+        WaccStatementList statement_list;
         WaccExpression* expression;
         WaccUnaryOperation unary_op;
         WaccBinaryOperation binary_op;
@@ -92,6 +134,12 @@ typedef struct
 WaccExpression* wacc_expr_new_unary(WaccUnaryOperation op, WaccExpression* expr);
 WaccExpression* wacc_expr_new_constant(uint64_t value);
 WaccExpression* wacc_expr_new_binary(WaccExpression* lhs, WaccBinaryOperation op, WaccExpression* rhs);
+WaccExpression* wacc_expr_new_variable(str name);
+WaccExpression* wacc_expr_new_assignment(str name, WaccExpression* expr);
+
+WaccStatement* wacc_stmt_new_declare(str name, WaccExpression* initializer);
+WaccStatement* wacc_stmt_new_return(WaccExpression* expression);
+WaccStatement* wacc_stmt_new_expression(WaccExpression* expression);
 
 void ast_show(WaccNode root, FILE* out, FILE* err);
 void ast_free(WaccNode root);
