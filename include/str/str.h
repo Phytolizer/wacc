@@ -199,6 +199,8 @@ str str_acquire(const char* s);
 
 str str_printf(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
 
+#define str_after(s, i) str_ref_chars(str_ptr(s) + (i), str_len(s) - (i))
+
 // searching and sorting --------------------------------------------------------------------
 // string partitioning (substring search)
 bool str_partition(str src, str patt, str* prefix, str* suffix);
