@@ -83,6 +83,11 @@ static void expression_free(WaccExpression* expr)
     }
 }
 
+void statement_free(WaccStatement stmt)
+{
+    expression_free(stmt.expression);
+}
+
 static void function_free(WaccFunction* function)
 {
     if (function == NULL)
@@ -93,7 +98,7 @@ static void function_free(WaccFunction* function)
     {
         case WACC_FUNC_FUNCTION:
             str_free(((WaccActualFunction*)function)->name);
-            expression_free(((WaccActualFunction*)function)->statement.expression);
+            statement_free(((WaccActualFunction*)function)->statement);
             free(function);
             break;
         case WACC_FUNC_ERROR:

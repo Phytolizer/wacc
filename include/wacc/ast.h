@@ -80,3 +80,4 @@ WaccNode* wacc_error_node_function(void);
 WaccNode* wacc_error_node_expression(void);
 
 void ast_free(WaccNode* ast);
+void statement_free(WaccStatement statement);

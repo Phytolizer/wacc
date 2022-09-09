@@ -42,11 +42,16 @@ int run(WaccArgBuf args, FILE* out, FILE* err)
     if (wacc_parse(ctx, &ast) != 0)
     {
         (void)fprintf(err, "parse error\n");
+        wacc_system_free(sys);
+        wacc_destroy(ctx);
         return 1;
     }
     if (sys->source.num_errors > 0)
     {
         (void)fprintf(err, "parse error\n");
+        ast_free(ast);
+        wacc_system_free(sys);
+        wacc_destroy(ctx);
         return 1;
     }
     ast_free(ast);

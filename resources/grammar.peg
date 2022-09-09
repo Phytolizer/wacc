@@ -31,26 +31,38 @@ function <- 'int' space n:ident _ '(' _ ')' _ '{' _ body:statement _ '}' _
     / 'int' space n:ident _ '(' _ ')' _ '{' _ body:statement _
     {
         wacc_system_handle_error(auxil, ERROR_MISSING_CLOSE_BRACE, range_new($0s, $0e));
+        str_free(n->as.text);
+        free(n);
+        statement_free(body->as.statement);
+        free(body);
         $$ = wacc_error_node_function();
     }
     / 'int' space n:ident _ '(' _ ')' _ '{' _
     {
         wacc_system_handle_error(auxil, ERROR_MISSING_BODY, range_new($0s, $0e));
+        str_free(n->as.text);
+        free(n);
         $$ = wacc_error_node_function();
     }
     / 'int' space n:ident _ '(' _ ')' _
     {
         wacc_system_handle_error(auxil, ERROR_MISSING_DEFINITION, range_new($0s, $0e));
+        str_free(n->as.text);
+        free(n);
         $$ = wacc_error_node_function();
     }
     / 'int' space n:ident _ '(' _
     {
         wacc_system_handle_error(auxil, ERROR_MISSING_CLOSE_PAREN, range_new($0s, $0e));
+        str_free(n->as.text);
+        free(n);
         $$ = wacc_error_node_function();
     }
     / 'int' space n:ident _
     {
         wacc_system_handle_error(auxil, ERROR_MISSING_ARGS, range_new($0s, $0e));
+        str_free(n->as.text);
+        free(n);
         $$ = wacc_error_node_function();
     }
     / 'int' space
