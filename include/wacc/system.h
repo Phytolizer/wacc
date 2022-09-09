@@ -22,6 +22,7 @@ typedef struct
 typedef struct
 {
     Source source;
+    FILE* err_stream;
 } WaccSystem;
 
 typedef enum
@@ -31,8 +32,8 @@ typedef enum
 #undef X
 } ErrorKind;
 
-WaccSystem* wacc_system_new(void);
+WaccSystem* wacc_system_new(FILE* err);
 void wacc_system_free(WaccSystem* system);
-void wacc_system_open_file(WaccSystem* system, str path);
+int wacc_system_open_file(WaccSystem* system, str path, FILE* err);
 int wacc_system_read_source(WaccSystem* system);
 void wacc_system_handle_error(WaccSystem* system, ErrorKind error, Range range);

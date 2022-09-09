@@ -16,7 +16,7 @@
 #define PCC_GETCHAR(auxil) wacc_system_read_source(auxil)
 }
 
-program <- f:function _ end_of_file
+program <- _ f:function _ end_of_file
     {
         $$ = wacc_node_new_program(f->as.function);
         free(f);
@@ -27,6 +27,36 @@ function <- 'int' space n:ident _ '(' _ ')' _ '{' _ body:statement _ '}' _
         $$ = wacc_node_new_function(n->as.text, body->as.statement);
         free(n);
         free(body);
+    }
+    / 'int' space n:ident _ '(' _ ')' _ '{' _ body:statement _
+    {
+        wacc_system_handle_error(auxil, ERROR_MISSING_CLOSE_BRACE, range_new($0s, $0e));
+        $$ = wacc_error_node_function();
+    }
+    / 'int' space n:ident _ '(' _ ')' _ '{' _
+    {
+        wacc_system_handle_error(auxil, ERROR_MISSING_BODY, range_new($0s, $0e));
+        $$ = wacc_error_node_function();
+    }
+    / 'int' space n:ident _ '(' _ ')' _
+    {
+        wacc_system_handle_error(auxil, ERROR_MISSING_DEFINITION, range_new($0s, $0e));
+        $$ = wacc_error_node_function();
+    }
+    / 'int' space n:ident _ '(' _
+    {
+        wacc_system_handle_error(auxil, ERROR_MISSING_CLOSE_PAREN, range_new($0s, $0e));
+        $$ = wacc_error_node_function();
+    }
+    / 'int' space n:ident _
+    {
+        wacc_system_handle_error(auxil, ERROR_MISSING_ARGS, range_new($0s, $0e));
+        $$ = wacc_error_node_function();
+    }
+    / 'int' space
+    {
+        wacc_system_handle_error(auxil, ERROR_MISSING_FUNC_NAME, range_new($0s, $0e));
+        $$ = wacc_error_node_function();
     }
 
 statement <- 'return' space v:expression _ ';'

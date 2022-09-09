@@ -27,15 +27,28 @@ typedef struct
     WaccExpression* expression;
 } WaccStatement;
 
+typedef enum
+{
+#define X(x) WACC_FUNC_##x,
+#include "wacc/ast/function_types.def"
+#undef X
+} WaccFunctionType;
+
 typedef struct
 {
-    str name;
-    WaccStatement statement;
+    WaccFunctionType type;
 } WaccFunction;
 
 typedef struct
 {
-    WaccFunction function;
+    WaccFunction base;
+    str name;
+    WaccStatement statement;
+} WaccActualFunction;
+
+typedef struct
+{
+    WaccFunction* function;
 } WaccProgram;
 
 typedef enum
@@ -51,18 +64,19 @@ typedef struct
     union {
         str text;
         WaccProgram program;
-        WaccFunction function;
+        WaccFunction* function;
         WaccStatement statement;
         WaccExpression* expression;
     } as;
 } WaccNode;
 
 WaccNode* wacc_node_new_text(str text);
-WaccNode* wacc_node_new_program(WaccFunction function);
+WaccNode* wacc_node_new_program(WaccFunction* function);
 WaccNode* wacc_node_new_function(str name, WaccStatement statement);
 WaccNode* wacc_node_new_statement(WaccExpression* expression);
 WaccNode* wacc_node_new_expression(uint64_t value);
 
+WaccNode* wacc_error_node_function(void);
 WaccNode* wacc_error_node_expression(void);
 
 void ast_free(WaccNode* ast);

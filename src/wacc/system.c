@@ -9,12 +9,16 @@ typedef struct
 static LineCol get_line_col(WaccSystem* system, size_t pos)
 {
     size_t i;
-    for (i = 1; i < system->source.line_starts.len; i++)
+    for (i = 0; i < system->source.line_starts.len; i++)
     {
         if (pos < system->source.line_starts.ptr[i])
         {
             break;
         }
+    }
+    if (i == 0)
+    {
+        return (LineCol){1, pos + 1};
     }
     return (LineCol){
         .line = i + 1,
@@ -22,7 +26,7 @@ static LineCol get_line_col(WaccSystem* system, size_t pos)
     };
 }
 
-WaccSystem* wacc_system_new(void)
+WaccSystem* wacc_system_new(FILE* err)
 {
     WaccSystem* system = malloc(sizeof(WaccSystem));
     system->source.path = str_null;
@@ -30,6 +34,7 @@ WaccSystem* wacc_system_new(void)
     system->source.text = (Text)BUF_NEW;
     system->source.line_starts = (LineStartBuf)BUF_NEW;
     system->source.num_errors = 0;
+    system->err_stream = err;
     return system;
 }
 
@@ -45,15 +50,16 @@ void wacc_system_free(WaccSystem* system)
     free(system);
 }
 
-void wacc_system_open_file(WaccSystem* system, str path)
+int wacc_system_open_file(WaccSystem* system, str path, FILE* err)
 {
     str_cpy(&system->source.path, path);
     system->source.fp = fopen(system->source.path.ptr, "r");
     if (system->source.fp == NULL)
     {
-        (void)fprintf(stderr, "error: failed to open file '" str_fmt "'\n", str_arg(path));
-        exit(1);
+        (void)fprintf(err, "error: failed to open file '" str_fmt "'\n", str_arg(path));
+        return 1;
     }
+    return 0;
 }
 
 int wacc_system_read_source(WaccSystem* system)
@@ -69,7 +75,7 @@ int wacc_system_read_source(WaccSystem* system)
     }
     else if (ferror(system->source.fp))
     {
-        (void)fprintf(stderr, "error: failed to read file '" str_fmt "'\n", str_arg(system->source.path));
+        (void)fprintf(system->err_stream, "error: failed to read file '" str_fmt "'\n", str_arg(system->source.path));
         exit(1);
     }
     return c;
@@ -83,8 +89,11 @@ void wacc_system_handle_error(WaccSystem* system, ErrorKind error, Range range)
     {
 #define X(x) \
     case ERROR_##x: \
-        (void)fprintf( \
-            stderr, str_fmt ":%zu:%zu: error: " #x "\n", str_arg(system->source.path), line_col.line, line_col.col); \
+        (void)fprintf(system->err_stream, \
+            str_fmt ":%zu:%zu: error: " #x "\n", \
+            str_arg(system->source.path), \
+            line_col.line, \
+            line_col.col); \
         break;
 #include "wacc/system/errors.def"
 #undef X

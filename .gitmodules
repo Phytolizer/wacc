@@ -8,3 +8,6 @@
 [submodule "tests/cases"]
 	path = tests/cases
 	url = https://github.com/nlsandler/write_a_c_compiler.git
+[submodule "deps/c-argparser/repo"]
+	path = deps/c-argparser/repo
+	url = https://github.com/Phytolizer/c-argparser

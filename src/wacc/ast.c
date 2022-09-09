@@ -11,7 +11,7 @@ WaccNode* wacc_node_new_text(str text)
     return node;
 }
 
-WaccNode* wacc_node_new_program(WaccFunction function)
+WaccNode* wacc_node_new_program(WaccFunction* function)
 {
     WaccNode* node = malloc(sizeof(WaccNode));
     node->kind = WACC_NODE_PROGRAM;
@@ -23,8 +23,11 @@ WaccNode* wacc_node_new_function(str name, WaccStatement statement)
 {
     WaccNode* node = malloc(sizeof(WaccNode));
     node->kind = WACC_NODE_FUNCTION;
-    node->as.function.name = name;
-    node->as.function.statement = statement;
+    WaccActualFunction* func = malloc(sizeof(WaccActualFunction));
+    func->base.type = WACC_FUNC_FUNCTION;
+    func->name = name;
+    func->statement = statement;
+    node->as.function = (WaccFunction*)func;
     return node;
 }
 
@@ -44,6 +47,16 @@ WaccNode* wacc_node_new_expression(uint64_t value)
     constant->base.type = WACC_EXPR_CONSTANT;
     constant->value = value;
     node->as.expression = (WaccExpression*)constant;
+    return node;
+}
+
+WaccNode* wacc_error_node_function(void)
+{
+    WaccNode* node = malloc(sizeof(WaccNode));
+    node->kind = WACC_NODE_FUNCTION;
+    WaccFunction* func = malloc(sizeof(WaccFunction));
+    func->type = WACC_FUNC_ERROR;
+    node->as.function = func;
     return node;
 }
 
@@ -70,10 +83,25 @@ static void expression_free(WaccExpression* expr)
     }
 }
 
-static void function_free(WaccFunction function)
+static void function_free(WaccFunction* function)
 {
-    str_free(function.name);
-    expression_free(function.statement.expression);
+    if (function == NULL)
+    {
+        return;
+    }
+    switch (function->type)
+    {
+        case WACC_FUNC_FUNCTION:
+            str_free(((WaccActualFunction*)function)->name);
+            expression_free(((WaccActualFunction*)function)->statement.expression);
+            free(function);
+            break;
+        case WACC_FUNC_ERROR:
+            free(function);
+            break;
+        default:
+            abort();
+    }
 }
 
 void ast_free(WaccNode* ast)

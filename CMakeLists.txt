@@ -5,6 +5,7 @@ project(wacc LANGUAGES C)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 include(PrependPath)
 
+add_subdirectory(deps/c-argparser)
 add_subdirectory(deps/packcc)
 
 macro(packcc_file INPUT OUTPUT TARGET)
@@ -55,7 +56,7 @@ target_include_directories(
 target_link_libraries(
   wacc
   PUBLIC str::str
-  PRIVATE file::file
+  PRIVATE file::file c-argparser::c-argparser
 )
 
 add_executable(wacc_driver src/wacc_driver/main.c)
