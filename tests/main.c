@@ -46,7 +46,7 @@ static TEST_FUNC(state, execute, TestCase test)
     const char* run_args[] = {"./wacc.out"};
     ProcessCreateResult wacc_result =
         process_run((ProcessCStrBuf)BUF_ARRAY(run_args), PROCESS_OPTION_COMBINED_STDOUT_STDERR);
-    TEST_ASSERT(state, wacc_result.present, CLEANUP((void)remove("wacc.out")), "wacc failed to run");
+    TEST_ASSERT(state, wacc_result.present, CLEANUP((void)remove("wacc.out")), "wacc.out failed to run");
 
     int wacc_code = wacc_result.value.returnCode;
     process_destroy(&wacc_result.value);
@@ -61,7 +61,7 @@ static TEST_FUNC(state, execute, TestCase test)
     const char* gcc_run_args[] = {"./gcc.out"};
     ProcessCreateResult gcc_run_result =
         process_run((ProcessCStrBuf)BUF_ARRAY(gcc_run_args), PROCESS_OPTION_COMBINED_STDOUT_STDERR);
-    TEST_ASSERT(state, gcc_run_result.present, CLEANUP((void)remove("gcc.out")), "gcc failed to run");
+    TEST_ASSERT(state, gcc_run_result.present, CLEANUP((void)remove("gcc.out")), "gcc.out failed to run");
 
     int gcc_code = gcc_run_result.value.returnCode;
     process_destroy(&gcc_run_result.value);
