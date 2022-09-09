@@ -98,5 +98,10 @@ int main()
 {
     TestState state = {0};
     run_all(&state);
+    printf("passed %zu, failed %zu, skipped %zu, assertions %zu\n",
+        state.passed,
+        state.failed,
+        state.skipped,
+        state.assertions);
     return state.failed > 0;
 }
