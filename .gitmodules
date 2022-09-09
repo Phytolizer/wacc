@@ -5,3 +5,6 @@
 [submodule "deps/packcc/repo"]
 	path = deps/packcc/repo
 	url = https://github.com/arithy/packcc.git
+[submodule "tests/cases"]
+	path = tests/cases
+	url = https://github.com/nlsandler/write_a_c_compiler.git
